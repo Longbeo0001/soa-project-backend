@@ -5,13 +5,12 @@
 TOKEN=$(curl -X PUT "http://169.254.169.254/latest/api/token" -H "X-aws-ec2-metadata-token-ttl-seconds: 21600")
 
 # Retrieve credentials information from the instance's IAM Role
-CREDENTIALS=$(curl -H "X-aws-ec2-metadata-token: $TOKEN" http://169.254.169.254/latest/meta-data/iam/security-credentials/)
-
-# Extract role name (assuming the instance has only one role)
-ROLE_NAME=$(echo $CREDENTIALS | jq -r '.')
-
+ROLE_NAME=$(curl -H "X-aws-ec2-metadata-token: $TOKEN" http://169.254.169.254/latest/meta-data/iam/security-credentials/)
+echo "1 $ROLE_NAME"
 # Retrieve detailed credentials (AccessKeyId, SecretAccessKey, Token)
 CREDS_JSON=$(curl -H "X-aws-ec2-metadata-token: $TOKEN" http://169.254.169.254/latest/meta-data/iam/security-credentials/$ROLE_NAME)
+echo "2 $CREDS_JSON"
+
 
 # Extract AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, and AWS_SESSION_TOKEN
 AWS_ACCESS_KEY_ID=$(echo $CREDS_JSON | jq -r '.AccessKeyId')
@@ -22,3 +21,5 @@ AWS_SESSION_TOKEN=$(echo $CREDS_JSON | jq -r '.SessionToken')
 export AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID
 export AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
 export AWS_SESSION_TOKEN=$AWS_SESSION_TOKEN
+
+echo "3 $AWS_ACCESS_KEY_ID"
