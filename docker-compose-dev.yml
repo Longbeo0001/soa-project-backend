@@ -6,8 +6,8 @@ services:
       dockerfile: Dockerfile-dev
     ports:
       - "5001:${PORT:-80}"
-    env_file:
-      - .env
+    # env_file:
+    #   - .env
     environment:
       - FLASK_APP=project/__init__.py
       - FLASK_DEBUG=1
