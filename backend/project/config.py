@@ -3,7 +3,10 @@ import logging
 from dotenv import load_dotenv
 
 
-load_dotenv()
+basedir = os.path.abspath(os.path.dirname(__file__))  
+parent_dir = os.path.dirname(os.path.dirname(basedir)) 
+dotenv_path = os.path.join(parent_dir, '.env')
+load_dotenv(dotenv_path)
 
 
 # services/users/project/config.py
