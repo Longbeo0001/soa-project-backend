@@ -381,6 +381,7 @@ echo "DEBUG: Getting full path to .env file"
 ENV_PATH=$(pwd)/"$OUTPUT_FILE"
 echo "DEBUG: Loading .env file from $ENV_PATH"
 source "$ENV_PATH"
+env
 
 # Start the server
 echo "DEBUG: Sourcing virtual environment"
