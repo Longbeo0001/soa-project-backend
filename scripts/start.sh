@@ -261,7 +261,7 @@ fetch_db_password() {
     # export AWS_REGION
 
     echo "DEBUG: Fetching SECRET_NAME from Parameter Store"
-    SECRET_NAME=$(aws ssm get-parameter --name "soa-param-codeland-db-secret-name" --query "Parameter.Value" --output text 2>/dev/null)
+    SECRET_NAME=$(aws ssm get-parameter --name "soa-param-codeland-db-secret-name" --query "Parameter.Value" --output text)
     echo "DEBUG: Checking if SECRET_NAME is set"
     if [ -z "$SECRET_NAME" ]; then
         print_error "Failed to retrieve secret name from Parameter Store."
@@ -271,7 +271,7 @@ fetch_db_password() {
     print_success "Secret name retrieved: $SECRET_NAME"
 
     echo "DEBUG: Fetching SECRET_VALUE from Secrets Manager"
-    SECRET_VALUE=$(aws secretsmanager get-secret-value --secret-id "$SECRET_NAME" --query "SecretString" --output text 2>/dev/null)
+    SECRET_VALUE=$(aws secretsmanager get-secret-value --secret-id "$SECRET_NAME" --query "SecretString" --output text)
     echo "DEBUG: Checking if SECRET_VALUE is set"
     if [ -z "$SECRET_VALUE" ]; then
         print_error "Failed to retrieve secret value from Secrets Manager."
@@ -292,7 +292,7 @@ fetch_db_password() {
 # Function to fetch DB URL from Parameter Store for prod
 fetch_db_url() {
     echo "DEBUG: Fetching DB_URL from Parameter Store"
-    DB_URL=$(aws ssm get-parameter --name "soa-param-codeland-db-url" --query "Parameter.Value" --output text 2>/dev/null)
+    DB_URL=$(aws ssm get-parameter --name "soa-param-codeland-db-url" --query "Parameter.Value" --output text)
     echo "DEBUG: Checking if DB_URL is set"
     if [ -z "$DB_URL" ]; then
         print_error "Failed to retrieve DB URL from Parameter Store."
