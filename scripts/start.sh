@@ -321,21 +321,16 @@ echo -e "  ${CYAN}Region: $AWS_REGION${NC}"
 # Create environment variables content
 echo "DEBUG: Creating $OUTPUT_FILE"
 cat > "$OUTPUT_FILE" << EOF
-# Database Configuration
 DB_USER=postgres
 DB_PASSWORD=$DB_PASSWORD
 DB_URL=$DB_URL
 DB_PORT=5432
 DB_NAME=dev
-
-# Application Configuration
 SECRET_KEY=my_precious
 FLASK_APP=project/__init__.py
 FLASK_DEBUG=1
 APP_SETTINGS=project.config.DevelopmentConfig
 PORT=80
-
-# AWS S3 Configuration
 STATIC_S3_BUCKET=soa-codeland-static
 AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID
 AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
