@@ -388,7 +388,7 @@ source /home/root/app/venv/bin/activate
 echo "DEBUG: Starting Gunicorn server"
 echo "Starting Gunicorn server..."
 echo "DEBUG: Changing directory to ~/app/backend"
-cd /home/root/appapp/backend
+cd /home/root/app/backend
 echo "DEBUG: Executing gunicorn"
 exec gunicorn -b 0.0.0.0:$PORT manage:app \
   --workers 4 \
