@@ -384,11 +384,11 @@ source "$ENV_PATH"
 
 # Start the server
 echo "DEBUG: Sourcing virtual environment"
-source ~/app/venv/bin/activate
+source /home/root/app/venv/bin/activate
 echo "DEBUG: Starting Gunicorn server"
 echo "Starting Gunicorn server..."
 echo "DEBUG: Changing directory to ~/app/backend"
-cd ~/app/backend
+cd /home/root/appapp/backend
 echo "DEBUG: Executing gunicorn"
 exec gunicorn -b 0.0.0.0:$PORT manage:app \
   --workers 4 \
