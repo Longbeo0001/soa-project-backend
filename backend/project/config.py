@@ -27,7 +27,7 @@ class DevelopmentConfig(BaseConfig):
 
     db_user = os.environ.get("DB_USER")
     db_password = os.environ.get("DB_PASSWORD")
-    db_url = f"{os.environ.get("DB_URL")}:{os.environ.get("DB_PORT")}/{os.environ.get("DB_NAME")}"  # e.g., "db:5432/dev"
+    db_url = f"{os.environ.get('DB_URL')}:{os.environ.get('DB_PORT')}/{os.environ.get('DB_NAME')}"  # e.g., "db:5432/dev"
 
     SQLALCHEMY_DATABASE_URI = f"postgresql://{db_user}:{db_password}@{db_url}"
     DEBUG_TB_ENABLED = True
@@ -41,7 +41,7 @@ class TestingConfig(BaseConfig):
     TESTING = True
     db_user = os.environ.get("DB_USER")
     db_password = os.environ.get("DB_PASSWORD")
-    db_url = f"{os.environ.get("DB_URL")}:{os.environ.get("DB_PORT")}/{os.environ.get("DB_NAME")}"  # e.g., "db:5432/dev"
+    db_url = f"{os.environ.get('DB_URL')}:{os.environ.get('DB_PORT')}/{os.environ.get('DB_NAME')}"  # e.g., "db:5432/dev"
 
     SQLALCHEMY_DATABASE_URI = f"postgresql://{db_user}:{db_password}@{db_url}"
     BCRYPT_LOG_ROUNDS = 4
@@ -55,7 +55,7 @@ class ProductionConfig(BaseConfig):
 
     db_user = os.environ.get("DB_USER")
     db_password = os.environ.get("DB_PASSWORD")
-    db_url = f"{os.environ.get("DB_URL")}:{os.environ.get("DB_PORT")}/{os.environ.get("DB_NAME")}"  # e.g., "db:5432/dev"
+    db_url = f"{os.environ.get('DB_URL')}:{os.environ.get('DB_PORT')}/{os.environ.get('DB_NAME')}"  # e.g., "db:5432/dev"
 
     SQLALCHEMY_DATABASE_URI = f"postgresql://{db_user}:{db_password}@{db_url}"
     LOG_LEVEL = logging.ERROR
