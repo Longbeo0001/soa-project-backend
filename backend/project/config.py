@@ -1,5 +1,9 @@
 import os
 import logging
+from dotenv import load_dotenv
+
+
+load_dotenv()
 
 
 # services/users/project/config.py
