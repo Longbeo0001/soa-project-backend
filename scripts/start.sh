@@ -197,7 +197,7 @@ fetch_prod_credentials() {
 
     echo "DEBUG: Obtaining IMDSv2 token"
     TOKEN=$(curl -s -X PUT "http://169.254.169.254/latest/api/token" -H "X-aws-ec2-metadata-token-ttl-seconds: 21600")
-    echo "DEBUG: Checking if TOKEN is set"
+    echo "DEBUG: Checking if TOKEN is set $TOKEN"
     if [ -z "$TOKEN" ]; then
         print_error "Failed to obtain IMDSv2 token. Ensure the script is running on an EC2 instance."
         exit 1
@@ -205,7 +205,7 @@ fetch_prod_credentials() {
 
     echo "DEBUG: Retrieving ROLE_NAME"
     ROLE_NAME=$(curl -s -H "X-aws-ec2-metadata-token: $TOKEN" http://169.254.169.254/latest/meta-data/iam/security-credentials/)
-    echo "DEBUG: Checking if ROLE_NAME is set"
+    echo "DEBUG: Checking if ROLE_NAME is set $ROLE_NAME"
     if [ -z "$ROLE_NAME" ]; then
         print_error "Failed to retrieve IAM role name from IMDSv2."
         exit 1
@@ -221,11 +221,11 @@ fetch_prod_credentials() {
 
     echo "DEBUG: Extracting AWS_ACCESS_KEY_ID from JSON"
     AWS_ACCESS_KEY_ID=$(echo "$CREDS_JSON" | jq -r '.AccessKeyId')
-    echo "DEBUG: Extracting AWS_SECRET_ACCESS_KEY from JSON"
+    echo "DEBUG: Extracting AWS_SECRET_ACCESS_KEY from JSON $AWS_ACCESS_KEY_ID"
     AWS_SECRET_ACCESS_KEY=$(echo "$CREDS_JSON" | jq -r '.SecretAccessKey')
-    echo "DEBUG: Extracting AWS_SESSION_TOKEN from JSON"
+    echo "DEBUG: Extracting AWS_SESSION_TOKEN from JSON $AWS_SECRET_ACCESS_KEY"
     AWS_SESSION_TOKEN=$(echo "$CREDS_JSON" | jq -r '.SessionToken')
-    echo "DEBUG: Retrieving AWS_REGION"
+    echo "DEBUG: Retrieving AWS_REGION $AWS_SESSION_TOKEN"
     AWS_REGION=$(curl -s -H "X-aws-ec2-metadata-token: $TOKEN" http://169.254.169.254/latest/meta-data/placement/region)
 
     echo "DEBUG: Checking if credentials are parsed"
@@ -255,10 +255,10 @@ fetch_db_password() {
     fi
 
     echo "DEBUG: Exporting AWS credentials"
-    export AWS_ACCESS_KEY_ID
-    export AWS_SECRET_ACCESS_KEY
-    export AWS_SESSION_TOKEN
-    export AWS_REGION
+    # export AWS_ACCESS_KEY_ID
+    # export AWS_SECRET_ACCESS_KEY
+    # export AWS_SESSION_TOKEN
+    # export AWS_REGION
 
     echo "DEBUG: Fetching SECRET_NAME from Parameter Store"
     SECRET_NAME=$(aws ssm get-parameter --name "soa-param-codeland-db-secret-name" --query "Parameter.Value" --output text 2>/dev/null)
