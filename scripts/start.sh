@@ -336,7 +336,7 @@ AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID
 AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
 AWS_REGION=$AWS_REGION
 EOF
-
+PORT=80
 # Add AWS_SESSION_TOKEN to .env file for prod environment
 echo "DEBUG: Checking if need to add AWS_SESSION_TOKEN"
 if [ "$ENVIRONMENT" = "prod" ] && [ -n "$AWS_SESSION_TOKEN" ]; then
@@ -377,7 +377,7 @@ echo "DEBUG: Sourcing virtual environment"
 source /root/app/venv/bin/activate
 echo "DEBUG: Starting Gunicorn server"
 echo "Starting Gunicorn server..."
-echo "DEBUG: Changing directory to ~/app/backend"
+echo "DEBUG: Changing directory to /root/app/backend"
 cd /root/app/backend
 echo "DEBUG: Executing gunicorn"
 exec gunicorn -b 0.0.0.0:$PORT manage:app \
