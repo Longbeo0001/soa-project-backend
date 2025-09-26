@@ -9,6 +9,7 @@ HELP=false
 ENVIRONMENT=""
 DB_PASSWORD="postgres"  # Default for dev
 DB_URL="db"  # Default for dev
+STATIC_S3_BUCKET=""
 
 # Colors for output
 echo "DEBUG: Defining colors"
@@ -302,6 +303,32 @@ fetch_db_url() {
     print_success "Database URL retrieved: $DB_URL"
 }
 
+# Function to fetch static S3 bucket name from Parameter Store
+fetch_static_s3_bucket() {
+    echo "DEBUG: Checking if AWS CLI is installed in fetch_static_s3_bucket"
+    if ! command -v aws &> /dev/null; then
+        print_error "AWS CLI not found. Please install AWS CLI first."
+        print_info "Installation guide: https://aws.amazon.com/cli/"
+        exit 1
+    fi
+
+    local aws_cmd="aws ssm get-parameter --name \"soa-param-codeland-static-bucket-name\" --query \"Parameter.Value\" --output text"
+
+    if [ "$ENVIRONMENT" = "dev" ]; then
+        aws_cmd="$aws_cmd --profile \"$PROFILE_NAME\""
+    fi
+
+    echo "DEBUG: Fetching STATIC_S3_BUCKET from Parameter Store"
+    STATIC_S3_BUCKET=$(eval $aws_cmd)
+    echo "DEBUG: Checking if STATIC_S3_BUCKET is set"
+    if [ -z "$STATIC_S3_BUCKET" ]; then
+        print_error "Failed to retrieve static S3 bucket name from Parameter Store."
+        exit 1
+    fi
+
+    print_success "Static S3 bucket name retrieved: $STATIC_S3_BUCKET"
+}
+
 # Fetch credentials based on environment
 echo "DEBUG: Fetching credentials for environment $ENVIRONMENT"
 if [ "$ENVIRONMENT" = "dev" ]; then
@@ -309,6 +336,9 @@ if [ "$ENVIRONMENT" = "dev" ]; then
 elif [ "$ENVIRONMENT" = "prod" ]; then
     fetch_prod_credentials
 fi
+
+# Fetch static S3 bucket name
+fetch_static_s3_bucket
 
 print_success "Credentials extracted successfully"
 echo -e "  ${CYAN}Access Key: ${AWS_ACCESS_KEY_ID:0:4}****${AWS_ACCESS_KEY_ID: -4}${NC}"
@@ -331,7 +361,7 @@ FLASK_APP=project/__init__.py
 FLASK_DEBUG=1
 APP_SETTINGS=project.config.DevelopmentConfig
 PORT=80
-STATIC_S3_BUCKET=soa-codeland-static
+STATIC_S3_BUCKET=$STATIC_S3_BUCKET
 AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID
 AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
 AWS_REGION=$AWS_REGION
@@ -358,7 +388,7 @@ echo -e "${GREEN}Summary:${NC}"
 echo "  Environment: $ENVIRONMENT"
 echo "  Profile: $PROFILE_NAME (used in dev mode)"
 echo "  Output File: $OUTPUT_FILE"
-echo "  S3 Bucket: soa-codeland-static"
+echo "  S3 Bucket: $STATIC_S3_BUCKET"
 echo "  Region: $AWS_REGION"
 echo ""
 
