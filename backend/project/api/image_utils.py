@@ -15,6 +15,25 @@ ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 MAX_FILE_SIZE = 5 * 1024 * 1024  # 5MB
 
 
+def get_s3_client():
+    """
+    Create and return S3 client
+    Uses IAM role credentials automatically when running on EC2
+    """
+    try:
+        # Only get region from environment
+        aws_region = os.environ.get('AWS_DEFAULT_REGION', 'us-east-1')
+        
+        # Create S3 client without explicit credentials
+        # boto3 will automatically use IAM role from EC2 instance profile
+        s3_client = boto3.client('s3', region_name=aws_region)
+        
+        return s3_client
+    except Exception as e:
+        logger.error(f"Error creating S3 client: {str(e)}")
+        raise
+
+
 def validate_image_file(file_data, filename):
     """
     Validate image file format and size
@@ -51,26 +70,18 @@ def validate_image_file(file_data, filename):
 def upload_image_to_s3(file_data, user_id, file_extension):
     """
     Upload image to S3 bucket
-    Returns: (success, s3_url_or_error_message)
+    Returns: (success, s3_url_or_error_message, presigned_url)
     """
     try:
-        # Get S3 configuration from environment
+        # Get S3 bucket name from environment
         bucket_name = os.environ.get('STATIC_S3_BUCKET')
-        aws_access_key_id = os.environ.get('AWS_ACCESS_KEY_ID')
-        aws_secret_access_key = os.environ.get('AWS_SECRET_ACCESS_KEY')
-        aws_region = os.environ.get('AWS_REGION', 'us-east-1')
         
-        if not all([bucket_name, aws_access_key_id, aws_secret_access_key]):
-            logger.error("Missing AWS S3 configuration")
-            return False, "S3 configuration not found"
+        if not bucket_name:
+            logger.error("Missing S3 bucket name configuration")
+            return False, "S3 bucket not configured", None
             
-        # Create S3 client
-        s3_client = boto3.client(
-            's3',
-            aws_access_key_id=aws_access_key_id,
-            aws_secret_access_key=aws_secret_access_key,
-            region_name=aws_region
-        )
+        # Create S3 client (uses IAM role automatically)
+        s3_client = get_s3_client()
         
         # Generate unique filename
         timestamp = datetime.now(timezone.utc).strftime('%Y%m%d_%H%M%S')
@@ -100,17 +111,17 @@ def upload_image_to_s3(file_data, user_id, file_extension):
         return True, s3_key_url, presigned_url
         
     except NoCredentialsError:
-        error_msg = "AWS credentials not available"
+        error_msg = "AWS credentials not available. Ensure EC2 instance has proper IAM role."
         logger.error(error_msg)
-        return False, error_msg
+        return False, error_msg, None
     except ClientError as e:
         error_msg = f"S3 upload failed: {str(e)}"
         logger.error(error_msg)
-        return False, error_msg
+        return False, error_msg, None
     except Exception as e:
         error_msg = f"Upload error: {str(e)}"
         logger.error(error_msg)
-        return False, error_msg
+        return False, error_msg, None
 
 
 def generate_presigned_url_from_s3_key(s3_key_url):
@@ -127,22 +138,8 @@ def generate_presigned_url_from_s3_key(s3_key_url):
         s3_path = s3_key_url[5:]  # Remove 's3://'
         bucket_name, s3_key = s3_path.split('/', 1)
         
-        # Get S3 configuration from environment
-        aws_access_key_id = os.environ.get('AWS_ACCESS_KEY_ID')
-        aws_secret_access_key = os.environ.get('AWS_SECRET_ACCESS_KEY')
-        aws_region = os.environ.get('AWS_REGION', 'us-east-1')
-        
-        if not all([aws_access_key_id, aws_secret_access_key]):
-            logger.error("Missing AWS S3 configuration")
-            return False, "S3 configuration not found"
-            
-        # Create S3 client
-        s3_client = boto3.client(
-            's3',
-            aws_access_key_id=aws_access_key_id,
-            aws_secret_access_key=aws_secret_access_key,
-            region_name=aws_region
-        )
+        # Create S3 client (uses IAM role automatically)
+        s3_client = get_s3_client()
         
         # Generate presigned URL (valid for 1 hour)
         presigned_url = s3_client.generate_presigned_url(
@@ -154,6 +151,10 @@ def generate_presigned_url_from_s3_key(s3_key_url):
         logger.info(f"Presigned URL generated for S3 key: {s3_key}")
         return True, presigned_url
         
+    except NoCredentialsError:
+        error_msg = "AWS credentials not available. Ensure EC2 instance has proper IAM role."
+        logger.error(error_msg)
+        return False, error_msg
     except Exception as e:
         error_msg = f"Error generating presigned URL: {str(e)}"
         logger.error(error_msg)
@@ -166,23 +167,15 @@ def get_latest_profile_image_url(user_id):
     Returns: (success, presigned_url_or_error_message)
     """
     try:
-        # Get S3 configuration from environment
+        # Get S3 bucket name from environment
         bucket_name = os.environ.get('STATIC_S3_BUCKET')
-        aws_access_key_id = os.environ.get('AWS_ACCESS_KEY_ID')
-        aws_secret_access_key = os.environ.get('AWS_SECRET_ACCESS_KEY')
-        aws_region = os.environ.get('AWS_REGION', 'us-east-1')
         
-        if not all([bucket_name, aws_access_key_id, aws_secret_access_key]):
-            logger.error("Missing AWS S3 configuration")
-            return False, "S3 configuration not found"
+        if not bucket_name:
+            logger.error("Missing S3 bucket name configuration")
+            return False, "S3 bucket not configured"
             
-        # Create S3 client
-        s3_client = boto3.client(
-            's3',
-            aws_access_key_id=aws_access_key_id,
-            aws_secret_access_key=aws_secret_access_key,
-            region_name=aws_region
-        )
+        # Create S3 client (uses IAM role automatically)
+        s3_client = get_s3_client()
         
         # List objects in user's profile images folder
         prefix = f"profile_images/user_{user_id}/"
@@ -219,7 +212,7 @@ def get_latest_profile_image_url(user_id):
                 raise e
                 
     except NoCredentialsError:
-        error_msg = "AWS credentials not available"
+        error_msg = "AWS credentials not available. Ensure EC2 instance has proper IAM role."
         logger.error(error_msg)
         return False, error_msg
     except ClientError as e:
