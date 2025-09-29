@@ -367,6 +367,7 @@ AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
 AWS_REGION=$AWS_REGION
 EOF
 PORT=80
+DB_PORT=5432
 # Add AWS_SESSION_TOKEN to .env file for prod environment
 echo "DEBUG: Checking if need to add AWS_SESSION_TOKEN"
 if [ "$ENVIRONMENT" = "prod" ] && [ -n "$AWS_SESSION_TOKEN" ]; then
@@ -390,6 +391,10 @@ echo "  Profile: $PROFILE_NAME (used in dev mode)"
 echo "  Output File: $OUTPUT_FILE"
 echo "  S3 Bucket: $STATIC_S3_BUCKET"
 echo "  Region: $AWS_REGION"
+echo "  DB_PASSWORD=$DB_PASSWORD"
+echo "  DB_URL=$DB_URL"
+echo "  PORT=$PORT"
+echo "  DB_PORT=$DB_PORT"
 echo ""
 
 echo -e "${YELLOW}Next steps:${NC}"
