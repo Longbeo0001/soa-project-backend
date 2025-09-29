@@ -123,9 +123,9 @@ echo ""
 
 # Initialize credential variables
 echo "DEBUG: Initializing credential variables"
-AWS_ACCESS_KEY_ID=""
-AWS_SECRET_ACCESS_KEY=""
-AWS_SESSION_TOKEN=""
+# AWS_ACCESS_KEY_ID=""
+# AWS_SECRET_ACCESS_KEY=""
+# AWS_SESSION_TOKEN=""
 AWS_REGION=""
 
 # Function to fetch credentials for dev environment
@@ -167,18 +167,18 @@ fetch_dev_credentials() {
     print_success "Profile '$PROFILE_NAME' found"
 
     # Extract credentials for the specified profile
-    echo "DEBUG: Extracting AWS_ACCESS_KEY_ID"
-    AWS_ACCESS_KEY_ID=$(aws configure get aws_access_key_id --profile "$PROFILE_NAME" 2>/dev/null)
-    echo "DEBUG: Extracting AWS_SECRET_ACCESS_KEY"
-    AWS_SECRET_ACCESS_KEY=$(aws configure get aws_secret_access_key --profile "$PROFILE_NAME" 2>/dev/null)
+    # echo "DEBUG: Extracting AWS_ACCESS_KEY_ID"
+    # AWS_ACCESS_KEY_ID=$(aws configure get aws_access_key_id --profile "$PROFILE_NAME" 2>/dev/null)
+    # echo "DEBUG: Extracting AWS_SECRET_ACCESS_KEY"
+    # AWS_SECRET_ACCESS_KEY=$(aws configure get aws_secret_access_key --profile "$PROFILE_NAME" 2>/dev/null)
     echo "DEBUG: Extracting AWS_REGION"
     AWS_REGION=$(aws configure get region --profile "$PROFILE_NAME" 2>/dev/null)
 
-    echo "DEBUG: Checking if keys are extracted"
-    if [ -z "$AWS_ACCESS_KEY_ID" ] || [ -z "$AWS_SECRET_ACCESS_KEY" ]; then
-        print_error "Failed to extract access key or secret key from profile"
-        exit 1
-    fi
+    # echo "DEBUG: Checking if keys are extracted"
+    # if [ -z "$AWS_ACCESS_KEY_ID" ] || [ -z "$AWS_SECRET_ACCESS_KEY" ]; then
+    #     print_error "Failed to extract access key or secret key from profile"
+    #     exit 1
+    # fi
 
     echo "DEBUG: Checking if region is set"
     if [ -z "$AWS_REGION" ]; then
@@ -220,20 +220,20 @@ fetch_prod_credentials() {
         exit 1
     fi
 
-    echo "DEBUG: Extracting AWS_ACCESS_KEY_ID from JSON"
-    AWS_ACCESS_KEY_ID=$(echo "$CREDS_JSON" | jq -r '.AccessKeyId')
-    echo "DEBUG: Extracting AWS_SECRET_ACCESS_KEY from JSON $AWS_ACCESS_KEY_ID"
-    AWS_SECRET_ACCESS_KEY=$(echo "$CREDS_JSON" | jq -r '.SecretAccessKey')
-    echo "DEBUG: Extracting AWS_SESSION_TOKEN from JSON $AWS_SECRET_ACCESS_KEY"
-    AWS_SESSION_TOKEN=$(echo "$CREDS_JSON" | jq -r '.SessionToken')
-    echo "DEBUG: Retrieving AWS_REGION $AWS_SESSION_TOKEN"
+    # echo "DEBUG: Extracting AWS_ACCESS_KEY_ID from JSON"
+    # AWS_ACCESS_KEY_ID=$(echo "$CREDS_JSON" | jq -r '.AccessKeyId')
+    # echo "DEBUG: Extracting AWS_SECRET_ACCESS_KEY from JSON $AWS_ACCESS_KEY_ID"
+    # AWS_SECRET_ACCESS_KEY=$(echo "$CREDS_JSON" | jq -r '.SecretAccessKey')
+    # echo "DEBUG: Extracting AWS_SESSION_TOKEN from JSON $AWS_SECRET_ACCESS_KEY"
+    # AWS_SESSION_TOKEN=$(echo "$CREDS_JSON" | jq -r '.SessionToken')
+    # echo "DEBUG: Retrieving AWS_REGION $AWS_SESSION_TOKEN"
     AWS_REGION=$(curl -s -H "X-aws-ec2-metadata-token: $TOKEN" http://169.254.169.254/latest/meta-data/placement/region)
 
-    echo "DEBUG: Checking if credentials are parsed"
-    if [ -z "$AWS_ACCESS_KEY_ID" ] || [ -z "$AWS_SECRET_ACCESS_KEY" ] || [ -z "$AWS_SESSION_TOKEN" ]; then
-        print_error "Failed to parse credentials from IMDSv2 response."
-        exit 1
-    fi
+    # echo "DEBUG: Checking if credentials are parsed"
+    # if [ -z "$AWS_ACCESS_KEY_ID" ] || [ -z "$AWS_SECRET_ACCESS_KEY" ] || [ -z "$AWS_SESSION_TOKEN" ]; then
+    #     print_error "Failed to parse credentials from IMDSv2 response."
+    #     exit 1
+    # fi
 
     echo "DEBUG: Checking if region is set"
     if [ -z "$AWS_REGION" ]; then
@@ -256,10 +256,10 @@ fetch_db_password() {
     fi
 
     echo "DEBUG: Exporting AWS credentials"
-    export AWS_ACCESS_KEY_ID
-    export AWS_SECRET_ACCESS_KEY
-    export AWS_SESSION_TOKEN
-    export AWS_REGION
+    # export AWS_ACCESS_KEY_ID
+    # export AWS_SECRET_ACCESS_KEY
+    # export AWS_SESSION_TOKEN
+    # export AWS_REGION
 
     echo "DEBUG: Fetching SECRET_NAME from Parameter Store"
     SECRET_NAME=$(aws ssm get-parameter --name "soa-param-codeland-db-secret-name" --query "Parameter.Value" --output text)
@@ -340,12 +340,12 @@ fi
 # Fetch static S3 bucket name
 fetch_static_s3_bucket
 
-print_success "Credentials extracted successfully"
-echo -e "  ${CYAN}Access Key: ${AWS_ACCESS_KEY_ID:0:4}****${AWS_ACCESS_KEY_ID: -4}${NC}"
-echo -e "  ${CYAN}Secret Key: ${AWS_SECRET_ACCESS_KEY:0:4}****${AWS_SECRET_ACCESS_KEY: -4}${NC}"
-if [ -n "$AWS_SESSION_TOKEN" ]; then
-    echo -e "  ${CYAN}Session Token: ${AWS_SESSION_TOKEN:0:4}****${AWS_SESSION_TOKEN: -4}${NC}"
-fi
+# print_success "Credentials extracted successfully"
+# echo -e "  ${CYAN}Access Key: ${AWS_ACCESS_KEY_ID:0:4}****${AWS_ACCESS_KEY_ID: -4}${NC}"
+# echo -e "  ${CYAN}Secret Key: ${AWS_SECRET_ACCESS_KEY:0:4}****${AWS_SECRET_ACCESS_KEY: -4}${NC}"
+# if [ -n "$AWS_SESSION_TOKEN" ]; then
+#     echo -e "  ${CYAN}Session Token: ${AWS_SESSION_TOKEN:0:4}****${AWS_SESSION_TOKEN: -4}${NC}"
+# fi
 echo -e "  ${CYAN}Region: $AWS_REGION${NC}"
 
 # Create environment variables content
@@ -362,18 +362,16 @@ FLASK_DEBUG=1
 APP_SETTINGS=project.config.DevelopmentConfig
 PORT=80
 STATIC_S3_BUCKET=$STATIC_S3_BUCKET
-AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID
-AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
 AWS_REGION=$AWS_REGION
 EOF
 PORT=80
 DB_PORT=5432
 # Add AWS_SESSION_TOKEN to .env file for prod environment
-echo "DEBUG: Checking if need to add AWS_SESSION_TOKEN"
-if [ "$ENVIRONMENT" = "prod" ] && [ -n "$AWS_SESSION_TOKEN" ]; then
-    echo "DEBUG: Appending AWS_SESSION_TOKEN to $OUTPUT_FILE"
-    echo "AWS_SESSION_TOKEN=$AWS_SESSION_TOKEN" >> "$OUTPUT_FILE"
-fi
+# echo "DEBUG: Checking if need to add AWS_SESSION_TOKEN"
+# if [ "$ENVIRONMENT" = "prod" ] && [ -n "$AWS_SESSION_TOKEN" ]; then
+#     echo "DEBUG: Appending AWS_SESSION_TOKEN to $OUTPUT_FILE"
+#     echo "AWS_SESSION_TOKEN=$AWS_SESSION_TOKEN" >> "$OUTPUT_FILE"
+# fi
 
 echo "DEBUG: Checking if file write was successful"
 if [ $? -eq 0 ]; then
