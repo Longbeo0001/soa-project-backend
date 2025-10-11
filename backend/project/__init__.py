@@ -8,10 +8,13 @@ from flask_migrate import Migrate
 from project.logger import get_logger
 from project.middleware import setup_request_logging
 
+from dotenv import load_dotenv
+
 toolbar = DebugToolbarExtension()
 migrate = Migrate()
 bcrypt = Bcrypt()
 db = SQLAlchemy()  # Init db global, attach sau khi create_app
+load_dotenv()
 
 
 def create_app():
